@@ -1,6 +1,6 @@
 
-resources/*
-target/*
+task2/resources/*
+task2/target/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
