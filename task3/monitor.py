@@ -5,6 +5,7 @@ from daemon import Daemon
 import sys
 import os
 import time
+from datetime import datetime
 import tempfile
 import postgresql as psql
 import postgresql.driver
@@ -15,6 +16,7 @@ class MonitorDaemon(Daemon):
 
     def run(self):
         monitor = Monitor()
+        time.sleep(5)
         while True: 
             monitor.generate_snapshot()
             time.sleep(monitor.interval)
@@ -28,22 +30,21 @@ class Monitor():
          """
         #load cfg
         config = configparser.ConfigParser()
-        
         with open("monitor.conf", "r") as f:
             config.readfp(f)
 
         if config.has_option("monitor", "interval"):
-            self.interval = config.get("monitor", "interval")
+            self.interval = int(config["monitor"]["interval"])
         else:
             print("interval is not set, using default")
             self.interval = 60
-
+        
         if config.has_option("database", "password"):
-            self.password = config.get("database", "password")
+            self.password = config["database"]["password"]
         else:
             print("db password is not set")
             sys.exit(1)
-            
+        print("Using interval: %d seconds" % self.interval)
         #connect to db
         self.interval = 10
         self.db_conn = psql.driver.connect(
@@ -63,6 +64,8 @@ class Monitor():
         data['mem'] = ps.virtual_memory()
         data['disk_io'] = ps.disk_io_counters()
         data['conn_stat'] = ps.net_io_counters(pernic=True)
+        ts = time.time()
+        data['timestamp'] = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
         json_data = json.dumps(data)
 
         query = self.db_conn.prepare("insert into system_snapshot (data) values ('%s')" % json_data)
