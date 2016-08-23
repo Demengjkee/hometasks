@@ -77,11 +77,19 @@ class PRStat:
         if self.__args.opened_after == None:
             self.__args.opened_after = datetime.min
         return True if date > self.__args.opened_after and date < self.__args.opened_before else False
+      
          
+    def __calculate_ratio(self, data):
+        status_list = [pr['state'] for pr in data]
+        closed = status_list.count("closed")
+        merged = status_list.count("merged")
+        return merged / closed
+    
 
 
     def parse_stat(self):
         stat = self.__get_stat(self.__generate_request())
+        print("---------------------------------------------------------------------------------------------------")
         for pr in stat:
             if self.__check_date(datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d')):
                 print("PR id:" + str(pr['number']) + " Name: " + pr["title"])
@@ -116,7 +124,8 @@ class PRStat:
                     if pr['closed_at'] != 'null':
                         print("Week closed: " + str(datetime.strptime(pr['closed_at'].split("T")[0], '%Y-%m-%d').isocalendar()[1]))
                 print("---------------------------------------------------------------------------------------------------")
-
+        if self.__args.ratio:
+            print("Merged/Closed ratio: " + str(self.__calculate_ratio(stat)))
 
 if __name__ == "__main__":
     tmp = PRStat()
