@@ -94,40 +94,43 @@ class PRStat:
     def parse_stat(self):
         stat = self.__get_stat(self.__generate_request())
         print("---------------------------------------------------------------------------------------------------")
-        for pr in stat:
-            if self.__check_date(datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d')):
-                print("PR id:" + str(pr['number']) + " Name: " + pr["title"])
-                if self.__args.days_opened:
-                    print("Opened " + str(datetime.now() - datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d')) + " ago")
-                if self.__args.comments_number:
-                    comments = self.__get_stat(pr['comments_url'])
-                    print("Comment number: " + str(len(comments)))
-                if self.__args.user_opened:
-                    print("Opened by: " + pr['user']['login'])
-                if self.__args.user_closed:        
-                    print("Closed by:") 
-                if self.__args.labels:
-                    print("Labels:")
-                if self.__args.lines_added:
-                    print("Lines added: ")
-                if self.__args.lines_deleted:
-                    print("Lines deleted: ")
-                if self.__args.day_of_week_closed:
-                    if pr['closed_at'] != 'null':
-                        print("Day of week closed: " + str(datetime.strptime(pr['closed_at'].split("T")[0], '%Y-%m-%d').weekday()))
-                if self.__args.day_of_week_opened:
-                    print("Day of week created: " + str(datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d').weekday()))
-                if self.__args.hour_opened:
-                    print("Hour opened: " + str(datetime.strptime(pr['created_at'].split("T")[1], '%h:%M:%s').hour))
-                if self.__args.hour_closed:
-                    if pr['closed_at'] != 'null':
-                        print("Hour closed: " + str(datetime.strptime(pr['closed_at'].split("T")[1], '%h:%M:%s').hour))
-                if self.__args.week_opened:
-                    print("Week opened: " + str(datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d').isocalendar()[1]))
-                if self.__args.week_closed:
-                    if pr['closed_at'] != 'null':
-                        print("Week closed: " + str(datetime.strptime(pr['closed_at'].split("T")[0], '%Y-%m-%d').isocalendar()[1]))
-                print("---------------------------------------------------------------------------------------------------")
+        try:
+            for pr in stat:
+                if self.__check_date(datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d')):
+                    print("PR id:" + str(pr['number']) + " Name: " + pr["title"])
+                    if self.__args.days_opened:
+                        print("Opened " + str(datetime.now() - datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d')) + " ago")
+                    if self.__args.comments_number:
+                        comments = self.__get_stat(pr['comments_url'])
+                        print("Comment number: " + str(len(comments)))
+                    if self.__args.user_opened:
+                        print("Opened by: " + pr['user']['login'])
+                    if self.__args.user_closed:        
+                        print("Closed by:") 
+                    if self.__args.labels:
+                        print("Labels:")
+                    if self.__args.lines_added:
+                        print("Lines added: ")
+                    if self.__args.lines_deleted:
+                        print("Lines deleted: ")
+                    if self.__args.day_of_week_closed:
+                        if pr['closed_at'] != 'null':
+                            print("Day of week closed: " + str(datetime.strptime(pr['closed_at'].split("T")[0], '%Y-%m-%d').weekday()))
+                    if self.__args.day_of_week_opened:
+                        print("Day of week created: " + str(datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d').weekday()))
+                    if self.__args.hour_opened:
+                        print("Hour opened: " + str(datetime.strptime(pr['created_at'].split("T")[1].split("Z")[0], '%H:%M:%S').hour))
+                    if self.__args.hour_closed:
+                        if pr['closed_at'] != 'null':
+                            print("Hour closed: " + str(datetime.strptime(pr['closed_at'].split("T")[1].split("Z")[0], '%H:%M:%S').hour))
+                    if self.__args.week_opened:
+                        print("Week opened: " + str(datetime.strptime(pr['created_at'].split("T")[0], '%Y-%m-%d').isocalendar()[1]))
+                    if self.__args.week_closed:
+                        if pr['closed_at'] != 'null':
+                            print("Week closed: " + str(datetime.strptime(pr['closed_at'].split("T")[0], '%Y-%m-%d').isocalendar()[1]))
+                    print("---------------------------------------------------------------------------------------------------")
+        except KeyboardInterrupt:
+            print("Interrupted")
         if self.__args.ratio:
             print("Merged/Closed ratio: " + str(self.__calculate_ratio(stat)))
 
