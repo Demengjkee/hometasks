@@ -83,7 +83,11 @@ class PRStat:
         status_list = [pr['state'] for pr in data]
         closed = status_list.count("closed")
         merged = status_list.count("merged")
-        return merged / closed
+        try:
+            ratio = merged / closed
+        except ZeroDivisionError:
+            ratio = "No Closed PRs and no Merged"
+        return ratio
     
 
 
