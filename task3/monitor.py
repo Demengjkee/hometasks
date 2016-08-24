@@ -1,6 +1,6 @@
-#!/usr/bin/python 
+#!/usr/bin/python
 
-import psutil as ps 
+import psutil as ps
 from daemon import Daemon
 import sys
 import os
@@ -12,23 +12,24 @@ import postgresql.driver
 import json
 import configparser
 
+
 class MonitorDaemon(Daemon):
 
     def run(self):
         monitor = Monitor()
         time.sleep(5)
-        while True: 
+        while True:
             monitor.generate_snapshot()
             time.sleep(monitor.interval)
-        
-            
+
+
 class Monitor():
-    
+
     def __init__(self):
         """ monitor's constructor
         parses config file and connects to DB
          """
-        #load cfg
+#       load cfg
         config = configparser.ConfigParser()
         with open("monitor.conf", "r") as f:
             config.readfp(f)
@@ -38,21 +39,20 @@ class Monitor():
         else:
             print("interval is not set, using default")
             self.interval = 60
-        
+
         if config.has_option("database", "password"):
             self.password = config["database"]["password"]
         else:
             print("db password is not set")
             sys.exit(1)
         print("Using interval: %d seconds" % self.interval)
-        #connect to db
-        self.interval = 10
+#       connect to db
         self.db_conn = psql.driver.connect(
-            user = "system_snapshot",
-            password = self.password,
-            host = "localhost",
-            port = 5432,
-            database = "system_snapshot"
+            user="system_snapshot",
+            password=self.password,
+            host="localhost",
+            port=5432,
+            database="system_snapshot"
         )
 
     def generate_snapshot(self):
@@ -65,13 +65,16 @@ class Monitor():
         data['disk_io'] = ps.disk_io_counters()
         data['conn_stat'] = ps.net_io_counters(pernic=True)
         ts = time.time()
-        data['timestamp'] = datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
+        data['timestamp'] = datetime.fromtimestamp(
+            ts).strftime('%Y-%m-%d %H:%M:%S')
         json_data = json.dumps(data)
 
-        query = self.db_conn.prepare("insert into system_snapshot (data) values ('%s')" % json_data)
+        query = self.db_conn.prepare(
+            "insert into system_snapshot (data) values ('%s')" % json_data
+        )
         query()
-        print("insert")        
-            
+        print("insert")
+
 
 if __name__ == "__main__":
     daemon = MonitorDaemon(tempfile.gettempdir() + '/monitor.pid')
@@ -89,4 +92,3 @@ if __name__ == "__main__":
     else:
         print("usage: %s start|stop|restart" % sys.argv[0])
         sys.exit(2)
-

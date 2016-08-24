@@ -1,4 +1,4 @@
-#!/usr/bin/python 
+#!/usr/bin/python
 
 if __name__ == "__main__":
 
@@ -10,7 +10,7 @@ if __name__ == "__main__":
         values = line.strip().split(" ")
     kf.close()
     vf.close()
-    
+
     if len(values) > len(keys):
         print("More values than keys, some values will be omitted")
 
@@ -21,7 +21,5 @@ if __name__ == "__main__":
         except Exception:
             dictionary[keys[i]] = "None"
 
-    with open ("../target/result", "w") as f:
-        f.write(str(dictionary) + "\n") 
-         
-    
+    with open("../target/result", "w") as f:
+        f.write(str(dictionary) + "\n")
