@@ -11,6 +11,8 @@ import postgresql as psql
 import postgresql.driver
 import json
 import configparser
+from trace import trace
+from ast import literal_eval
 
 
 class MonitorDaemon(Daemon):
@@ -28,7 +30,7 @@ class Monitor():
     def __init__(self):
         """ monitor's constructor
         parses config file and connects to DB
-         """
+        """
 #       load cfg
         config = configparser.ConfigParser()
         with open("monitor.conf", "r") as f:
@@ -40,12 +42,20 @@ class Monitor():
             print("interval is not set, using default")
             self.interval = 60
 
+        if config.has_option("monitor", "trace_enabled"):
+            self.trace_enabled = \
+                literal_eval(config["monitor"]["trace_enabled"])
+        else:
+            print("trace_enabled is not present using default: True")
+            self.trace_enabled = True
+
         if config.has_option("database", "password"):
             self.password = config["database"]["password"]
         else:
             print("db password is not set")
             sys.exit(1)
         print("Using interval: %d seconds" % self.interval)
+        print("Using trace: " + str(self.trace_enabled))
 #       connect to db
         self.db_conn = psql.driver.connect(
             user="system_snapshot",
@@ -55,6 +65,7 @@ class Monitor():
             database="system_snapshot"
         )
 
+    @trace(sys.stdout)
     def generate_snapshot(self):
         """ generate_snapshot
         creates snapshot and puts it to DB
