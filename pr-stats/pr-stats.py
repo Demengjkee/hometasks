@@ -126,7 +126,7 @@ class PRStat:
         )
 
         self.__args = parser.parse_args(sys.argv[1:])
-        print(self.__args)
+#        print(self.__args)
         self.__get_auth()
 
     def __get_auth(self):
@@ -166,7 +166,7 @@ class PRStat:
         try:
             ratio = merged / closed
         except ZeroDivisionError:
-            ratio = "No Closed PRs and no Merged"
+            ratio = "No Closed PRs"
         return ratio
 
     def parse_stat(self):
@@ -181,6 +181,9 @@ class PRStat:
                         )):
                     print("PR id:" + str(pr['number']) +
                           " Name: " + pr["title"])
+
+                    state_data = self.__get_stat(pr['_links']['issue']['href'])
+                    pr_stat = self.__get_stat(pr['url'])
                     if self.__args.days_opened:
                         print("Opened " + str(
                             datetime.now() -
@@ -191,18 +194,25 @@ class PRStat:
                             " ago"
                         )
                     if self.__args.comments_number:
-                        comments = self.__get_stat(pr['comments_url'])
-                        print("Comment number: " + str(len(comments)))
+                        print("Comment number: " + str(state_data['comments']))
                     if self.__args.user_opened:
                         print("Opened by: " + pr['user']['login'])
                     if self.__args.user_closed:
-                        print("Closed by:")
+                        if state_data['closed_by'] is not None:
+                            print("Closed by: " +
+                                  str(state_data['closed_by']['login']))
+                        else:
+                            print("Still open")
                     if self.__args.labels:
-                        print("Labels:")
+                        if len(state_data['labels']) > 0:
+                            [print(label['name'])
+                                for label in state_data['labels']]
+                        else:
+                            print("No labels")
                     if self.__args.lines_added:
-                        print("Lines added: ")
+                        print("Lines added: " + str(pr_stat['additions']))
                     if self.__args.lines_deleted:
-                        print("Lines deleted: ")
+                        print("Lines deleted: " + str(pr_stat['deletions']))
                     if self.__args.day_of_week_closed:
                         if pr['closed_at'] != 'null':
                             print("Day of week closed: " + str(
